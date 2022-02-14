@@ -1,0 +1,319 @@
+;;; package --- Summary
+;;; Commentary:
+;;; Code:
+
+
+;; add-apt-repository ppa:kelleyk/emacs
+;; apt -y install build-essential emacs27 cmake libtool libvterm-dev
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Startup
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Package management
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(require 'package)
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+(add-to-list 'package-archives '("elpa" . "http://elpa.gnu.org/packages/"))
+
+(package-initialize)
+
+(unless package-archive-contents     ; Unless a package archive already exists,
+  (package-refresh-contents))        ; Refresh package contents so that Emacs knows which packages to load
+
+
+;; Initialize use-package on non-linux platforms
+(unless (package-installed-p 'use-package)        ; Unless "use-package" is installed, install "use-package"
+  (package-install 'use-package))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; use-package
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; vertico / orderless / marginalia / selectrum
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode))
+
+(use-package orderless
+  :ensure t
+  :init
+  (setq completion-styles '(orderless)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package savehist
+  :ensure t
+  :init
+  (savehist-mode))
+
+(use-package marginalia
+  :ensure t
+  ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init configuration is always executed (Not lazy!)
+  :init
+
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+
+;; Enable selectrum
+(use-package selectrum
+  :ensure t
+  :init
+  (selectrum-mode +1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; doom-modeline
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; zygospore
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Undelete a window using C-x 1 once more
+(use-package zygospore
+  :ensure t
+  :bind (("C-x 1" . zygospore-toggle-delete-other-windows)
+         ("RET" .   newline-and-indent)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; General Config
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package emacs
+  :init
+
+  (setq inhibit-startup-message t
+        initial-scratch-message "")
+
+  ;; Confirm before exiting
+  (setq confirm-kill-emacs #'yes-or-no-p)
+
+  ;; Only y/n answers
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; Overwrite selected text
+  (delete-selection-mode t)
+
+  ;; Resize the echo area - bottom bar
+  ;;(setq max-mini-window-height 0)
+
+  ;; Enable mouse wheel scrolling in nox
+  (setq xterm-mouse-mode t)
+
+  ;; Turn on font-lock mode
+  (when (fboundp 'global-font-lock-mode)
+    (global-font-lock-mode t))
+
+  ;; Turn on the mouse wheel
+  (setq mouse-wheel-mode t)
+
+  ;; Turn on column number in bottom info bar
+  (column-number-mode t)
+
+  ;; Turn off the menu toolbar
+  (menu-bar-mode 0)
+  (tool-bar-mode 0)
+
+  ;; Turn on the scrollbar and buffer size
+  ;;(scroll-bar-mode nil)
+
+  ;; Enable visual feedback on selections
+  (setq transient-mark-mode t)
+
+  ;; Set line width to 78 columns...
+  (setq fill-column 78)
+  (setq auto-fill-mode t)
+
+  ;; Turn autoindenting on
+  (global-set-key "\r" 'newline-and-indent)
+
+  ;; Expand the following abbreviations while typing in text files
+  (abbrev-mode 1)
+  (setq abbrev-mode t)
+
+  ;; Insert spaces instead of tabs
+  (setq-default indent-tabs-mode nil)
+
+  ;; Now, when you press Tab one time it will indent and if you press it again
+  ;; you’ll get completion candidates. If the indentation at point is already
+  ;; correct you’ll get the completion candidates right away.
+  ;;
+  ;; https://emacsredux.com/blog/2016/01/31/use-tab-to-indent-or-complete/
+  (setq tab-always-indent 'complete)
+
+  ;; Return < Emacs 24 clipboard settings
+  (setq select-active-regions nil)
+  (setq mouse-drag-copy-region t)
+  (setq select-enable-primary t)
+  (setq select-enable-clipboard nil)
+  (global-set-key [mouse-2] 'mouse-yank-at-click)
+
+  ;; Show unncessary whitespace that can mess up your diff
+  (add-hook 'prog-mode-hook
+            (lambda () (interactive)
+              (setq show-trailing-whitespace 1)))
+
+  ;; Set appearance of a tab that is represented by 4 spaces
+  (setq-default tab-width 4)
+
+  ;; Display the time in the modeline
+  (setq display-time-format "%T %F")
+  (setq display-time-interval 1)
+  (display-time-mode t)
+
+  ;; Set F6 to comment region
+  (global-set-key (kbd "<f6>") 'comment-or-uncomment-region)
+
+  ;; Enable recent files mode.
+  (recentf-mode t)
+
+  ;; Follow symlinks
+  (setq vc-follow-symlinks t)
+
+  ;; Winner mode for undo/redo window layout changes
+  (winner-mode t)
+
+  )
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Backups
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Don't clutter the filesystem by saving backups in the same directory
+;; and save under a local directory instead
+(setq backup-directory-alist `(("." . "~/.emacs.d/saves")))
+
+;; Use version numbers for backups
+(setq version-control t)
+
+;; Number of newest versions to keep
+(setq kept-new-versions 10)
+
+;; Number of oldest versions to keep
+(setq kept-old-versions 0)
+
+;; Don't ask to delete excess backup versions
+(setq delete-old-versions t)
+
+;; Copy all files, don't rename them
+(setq backup-by-copying t)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; rainbow
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package rainbow-mode
+  :if window-system
+  :ensure t
+  :defer t
+  :hook (prog-mode . rainbow-mode))
+
+(use-package rainbow-delimiters
+  :ensure t
+  :defer t
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; vterm
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (use-package multi-vterm
+;;   :ensure t)
+
+;; (global-set-key [f12] 'multi-vterm)
+;; (global-set-key [C-f12] 'multi-vterm-dedicated-toggle)
+;; (global-set-key [C-next] 'multi-vterm-next)
+;; (global-set-key [C-prior] 'multi-vterm-prev)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; treemacs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package treemacs
+  :ensure t
+  :bind
+  (:map global-map
+        ([f8] . treemacs)
+        ("C-<f8>" . treemacs-select-window))
+  :config
+  (setq treemacs-position 'right)
+  (setq treemacs-is-never-other-window t))
+
+(add-hook 'treemacs-mode-hook (lambda () (text-scale-adjust -1)))
+
+(with-eval-after-load 'treemacs
+  (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; nxml
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; nxml Mode
+(setq auto-mode-alist
+      (cons '("\\.\\(xml\\|xsl\\|rng\\|xhtml\\|xsd\\)\\'" . nxml-mode)
+            auto-mode-alist))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sh
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(add-hook 'sh-mode-hook (lambda ()
+                          (setq tab-width 4)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; salt
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package salt-mode
+  :ensure t)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; company
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package company
+  :ensure t
+  :init
+  (global-company-mode 1)
+  (delete 'company-semantic company-backends))
+
+
+(provide '.emacs)
+;;; .emacs ends here
