@@ -9,6 +9,8 @@
 ;; apt -y install build-essential emacs27 cmake libtool libvterm-dev
 ;; emacs --script ~/.emacs
 
+;; wget 'https://raw.githubusercontent.com/timeodonovan/dotfiles/main/.emacs_nox' -O ~/.emacs ; add-apt-repository -y ppa:kelleyk/emacs ; apt -y install build-essential emacs27 cmake libtool libvterm-dev ; emacs --script ~/.emacs
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Startup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
