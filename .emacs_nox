@@ -5,11 +5,13 @@
 
 
 ;; wget 'https://raw.githubusercontent.com/timeodonovan/dotfiles/main/.emacs_nox' -O ~/.emacs
+;; apt-get -y install software-properties-common
 ;; add-apt-repository -y ppa:kelleyk/emacs
-;; apt -y install build-essential emacs27 cmake libtool libvterm-dev
+;; apt-get update
 ;; emacs --script ~/.emacs
+;; apt-get install software-properties-common
 
-;; wget 'https://raw.githubusercontent.com/timeodonovan/dotfiles/main/.emacs_nox' -O ~/.emacs ; add-apt-repository -y ppa:kelleyk/emacs ; apt -y install build-essential emacs27 cmake libtool libvterm-dev ; emacs --script ~/.emacs
+;; wget 'https://raw.githubusercontent.com/timeodonovan/dotfiles/main/.emacs_nox' -O ~/.emacs ; apt-get -y install software-properties-common ; add-apt-repository -y ppa:kelleyk/emacs ; apt-get update ; apt -y install build-essential emacs27 cmake libtool libtool-bin libvterm-dev ; emacs --script ~/.emasc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Startup
@@ -254,13 +256,17 @@
 ;; vterm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (use-package multi-vterm
-;;   :ensure t)
+(setq vterm-module-cmake-args "-DUSE_SYSTEM_LIBVTERM=no")
+(use-package vterm
+    :ensure t)
 
-;; (global-set-key [f12] 'multi-vterm)
-;; (global-set-key [C-f12] 'multi-vterm-dedicated-toggle)
-;; (global-set-key [C-next] 'multi-vterm-next)
-;; (global-set-key [C-prior] 'multi-vterm-prev)
+(use-package multi-vterm
+  :ensure t)
+
+(global-set-key [f12] 'multi-vterm)
+(global-set-key [C-f12] 'multi-vterm-dedicated-toggle)
+(global-set-key [C-next] 'multi-vterm-next)
+(global-set-key [C-prior] 'multi-vterm-prev)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -318,6 +324,14 @@
   :init
   (global-company-mode 1)
   (delete 'company-semantic company-backends))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; markdown
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package markdown-mode
+  :ensure t)
 
 
 (provide '.emacs)
